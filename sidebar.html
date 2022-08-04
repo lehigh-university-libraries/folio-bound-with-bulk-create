@@ -1,0 +1,124 @@
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons.css">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
+
+  <style type="text/css">
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #445460;
+    }
+
+    label, legend {
+      color: white;
+      font-weight: bold;
+    }
+
+    #environment div {
+      display: inline-block;
+    }
+
+    #environment div:not(:last-child) {
+      margin-right: 30px;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div class="sidebar">
+    <form name="inventoryInfo" id="inventoryInfo">
+
+      <fieldset id="environment">
+        <legend>Environment</legend>
+        <div class="form-group">
+          <input type="radio" id="env_test" value="test" name="environment">
+          <label for="env_test">Test</label>
+        </div>
+        <div class="form-group">
+          <input type="radio" id="env_prod" value="prod" name="environment">
+          <label for="env_prod">Production</label>
+        </div>
+      </fieldset>
+      <br />
+
+      <div class="block form-group">
+        <label for="start_row">Start Row</label>
+        <input type="text" id="start_row">
+      </div>
+
+      <div class="block form-group">
+        <label for="row_count">Number of Rows to Create</label>
+        <input type="text" id="row_count">
+      </div>
+
+      <div class="block form-group">
+        <input type="button" class="action" id="create_parts" value="Create Holdings & Bound-with Parts" disabled="disabled" onclick="loadAndProcessRecords()" />
+      </div>
+      <br />
+
+    </form>
+
+    <!-- Load the jQuery library from the Google CDN -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+
+
+    <script>
+      $("#environment input[type=radio]").click(function() {
+        checkReadyToSubmit();
+      });
+      $("input[type=text]").keyup(function() {
+        checkReadyToSubmit();
+      })
+
+      function checkReadyToSubmit() {
+        let start_row = $("#start_row").val();
+        let row_count = $("#row_count").val();
+
+        if ($("#environment input[type=radio]:checked").size() > 0
+          && start_row.length && !isNaN(start_row)
+          && row_count.length && !isNaN(row_count)) {
+          $("#create_parts").removeAttr("disabled");
+          var i = 1/0;
+        }
+        else {
+          $("#create_parts").attr("disabled", "disabled");
+        }
+      }
+
+      function loadAndProcessRecords() {
+        function onSuccess(records) {
+        //   console.info("orders: " + orders);
+        //   $("#create_parts").removeAttr("disabled");
+        }
+
+        function onFailure(error) {
+        //   console.log("Failed with error: ", error);
+        //   alert("Failed with error: " + error);
+        //   $("#create_parts").removeAttr("disabled");
+        }
+
+        $("#create_parts").attr("disabled", "disabled");
+        let environment = $("#environment input[type=radio]:checked").val();
+        let start_row = $("#start_row").val();
+        let row_count = $("#row_count").val();
+        let orders = google.script.run
+          .withSuccessHandler(onSuccess)
+          .withFailureHandler(onFailure)
+          .loadAndProcessRecords({
+            'environment': environment,
+            'start_row': start_row,
+            'row_count': row_count
+          });
+      }
+
+    </script>
+
+  </div>
+
+</body>
+
+</html>
