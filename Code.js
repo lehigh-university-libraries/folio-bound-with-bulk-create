@@ -1,8 +1,3 @@
-const BASE_OKAPI = {   //1 -> YOUR OKAPI ENDPOINTS
-    'prod': 'https://lehigh-okapi.folio.indexdata.com',
-    'test': 'https://lehigh-test-okapi.folio.indexdata.com'
-  };
-
 const ITEM_BARCODE_COLUMN = 'D';
 const INSTANCE_UUID_COLUMN = 'K';
 const LAST_COLUMN = 'L';
@@ -23,23 +18,6 @@ function showSidebar() {  // eslint-disable-line no-unused-vars
       .showSidebar(html);
 }
   
-function authenticate(config) {
-    //AUTHENTICATE
-    token = FOLIOAUTHLIBRARY.authenticate(BASE_OKAPI[config.environment]);
-  
-    getHeaders = {
-      "Accept": "application/json",
-      "x-okapi-tenant": "lu",
-      "x-okapi-token": token
-    };
-    PropertiesService.getScriptProperties().setProperty("headers", JSON.stringify(getHeaders));
-    getOptions = {
-      'headers': getHeaders,
-      'muteHttpExceptions': true
-    }
-    PropertiesService.getScriptProperties().setProperty("getOptions", JSON.stringify(getOptions));
-}
-  
 function testLoadAndProcessRecords() {
     loadAndProcessRecords({
       'environment': 'test',
@@ -50,7 +28,7 @@ function testLoadAndProcessRecords() {
   
 function loadAndProcessRecords(config) {
     PropertiesService.getScriptProperties().setProperty("config", JSON.stringify(config));
-    authenticate(config);
+    FOLIOAUTHLIBRARY.authenticateAndSetHeaders(config);
   
     let spreadsheet = SpreadsheetApp.getActiveSheet();
     let startRow = parseInt(config.start_row);
@@ -106,7 +84,8 @@ function getItemRecord(barcode) {
     let config = JSON.parse(PropertiesService.getScriptProperties().getProperty("config"));
     
     // execute query 
-    let itemQuery = BASE_OKAPI[config.environment] + "/inventory/items?query=(barcode==" + barcode + ")";
+    let itemQuery = FOLIOAUTHLIBRARY.getBaseOkapi(config.environment) + 
+        "/inventory/items?query=(barcode==" + barcode + ")";
     console.log("Loading item with query: ", itemQuery);
     let getOptions = JSON.parse(PropertiesService.getScriptProperties().getProperty("getOptions"));
     let response = UrlFetchApp.fetch(itemQuery, getOptions);
@@ -128,7 +107,8 @@ function getHoldingRecord(id) {
     let config = JSON.parse(PropertiesService.getScriptProperties().getProperty("config"));
     
     // execute query 
-    let holdingRecordQuery = BASE_OKAPI[config.environment] + "/holdings-storage/holdings/" + id;
+    let holdingRecordQuery = FOLIOAUTHLIBRARY.getBaseOkapi(config.environment) + 
+        "/holdings-storage/holdings/" + id;
     console.log("Loading holding record with query: ", holdingRecordQuery);
     let getOptions = JSON.parse(PropertiesService.getScriptProperties().getProperty("getOptions"));
     let response = UrlFetchApp.fetch(holdingRecordQuery, getOptions);
@@ -157,7 +137,7 @@ function cloneHoldingForNewInstance(primaryHoldingRecord, instanceUuid) {
 
     // Execute post 
     let config = JSON.parse(PropertiesService.getScriptProperties().getProperty("config"));
-    let url = BASE_OKAPI[config.environment] + "/holdings-storage/holdings";
+    let url = FOLIOAUTHLIBRARY.getBaseOkapi(config.environment) + "/holdings-storage/holdings";
     let headers = JSON.parse(PropertiesService.getScriptProperties().getProperty("headers"));
     let options = {
       'method': 'POST',
@@ -186,7 +166,7 @@ function createBoundWithPart(item, holdingRecord) {
     let config = JSON.parse(PropertiesService.getScriptProperties().getProperty("config"));
 
     // execute query 
-    let url = BASE_OKAPI[config.environment] + "/inventory-storage/bound-with-parts";
+    let url = FOLIOAUTHLIBRARY.getBaseOkapi(config.environment) + "/inventory-storage/bound-with-parts";
     let headers = JSON.parse(PropertiesService.getScriptProperties().getProperty("headers"));
     let boundWithPart = {
         "holdingsRecordId": holdingRecord.id,
