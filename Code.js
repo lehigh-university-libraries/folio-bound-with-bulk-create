@@ -65,6 +65,7 @@ function loadAndProcessRecords(config) {
     let currentItem = null;
     let primaryHoldingRecord = null;
     for (let row = startRow; row < startRow + rowCount; row++) {
+        console.log("Starting on row #" + row);
         let rowBarcode = getBarcode(spreadsheet, row);
         let currentHoldingRecord = null;
 
@@ -299,6 +300,5 @@ function updateSheet(spreadsheet, row, success) {
     let color = success ? "lightgreen" : "lightred";
     // spreadsheet.getRange("A" + row + ":Z" + row).setBackground(color);
     let range = spreadsheet.getRange("A" + row + ":" + LAST_COLUMN + row);
-    console.log("setting color on range" + range.getColumn() + range.getRow() + " " + range.getNumColumns() + " " + range.getNumRows());
     range.setBackground(color);
 }
