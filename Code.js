@@ -2,7 +2,8 @@ const ITEM_BARCODE_COLUMN = 'D';
 const INSTANCE_UUID_COLUMN = 'K';
 const LAST_COLUMN = 'L';
 const SOURCE_ID_FOLIO = "f32d531e-df79-46b3-8932-cdd35f7a2264";
-  
+const STATISTICAL_CODE_RETENTION_AGREEMENT = "ba16cd17-fb83-4a14-ab40-23c7ffa5ccb5";
+
 function onOpen() {
     var ui = SpreadsheetApp.getUi();
     ui.createMenu('FOLIO')
@@ -131,6 +132,7 @@ function cloneHoldingForNewInstance(primaryHoldingRecord, instanceUuid) {
     holdingRecord.hrid = null;
     holdingRecord.formerIds = null;
     holdingRecord.metadata = null;
+    clearRetentionAgreements(holdingRecord);
 
     // Set the source type to explicitly be FOLIO
     holdingRecord.sourceId = SOURCE_ID_FOLIO;
@@ -160,6 +162,16 @@ function cloneHoldingForNewInstance(primaryHoldingRecord, instanceUuid) {
 
     let createdHoldingRecord = JSON.parse(responseContent);
     return createdHoldingRecord;
+}
+
+function clearRetentionAgreements(holdingRecord) {
+    let statisticalCodeIds = [];
+    for (const statisticalCodeId of holdingRecord.statisticalCodeIds) {
+        if (statisticalCodeId != STATISTICAL_CODE_RETENTION_AGREEMENT) {
+            statisticalCodeIds.push(statisticalCodeId);
+        }
+    }
+    holdingRecord.statisticalCodeIds = statisticalCodeIds;
 }
 
 function createBoundWithPart(item, holdingRecord) {
