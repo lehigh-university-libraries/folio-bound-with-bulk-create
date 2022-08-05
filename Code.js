@@ -297,7 +297,7 @@ function createBoundWithPart(item, holdingRecord) {
 //   }
   
 function updateSheet(spreadsheet, row, success) {
-    let color = success ? "lightgreen" : "lightred";
+    let color = success ? "lightgreen" : "lightcoral";
     // spreadsheet.getRange("A" + row + ":Z" + row).setBackground(color);
     let range = spreadsheet.getRange("A" + row + ":" + LAST_COLUMN + row);
     range.setBackground(color);
