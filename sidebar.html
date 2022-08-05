@@ -90,15 +90,15 @@
       }
 
       function loadAndProcessRecords() {
-        function onSuccess(records) {
-        //   console.info("orders: " + orders);
-        //   $("#create_parts").removeAttr("disabled");
+        function onSuccess() {
+          console.info("Finished successfully.");
+          $("#create_parts").removeAttr("disabled");
         }
 
         function onFailure(error) {
-        //   console.log("Failed with error: ", error);
-        //   alert("Failed with error: " + error);
-        //   $("#create_parts").removeAttr("disabled");
+          console.log("Failed with error: ", error);
+          alert("Failed with error: " + error);
+          $("#create_parts").removeAttr("disabled");
         }
 
         $("#create_parts").attr("disabled", "disabled");
