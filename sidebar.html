@@ -51,8 +51,8 @@
       </div>
 
       <div class="block form-group">
-        <label for="row_count">Number of Rows to Create</label>
-        <input type="text" id="row_count">
+        <label for="end_row">End Row (Inclusive)</label>
+        <input type="text" id="end_row">
       </div>
 
       <div class="block form-group">
@@ -76,11 +76,11 @@
 
       function checkReadyToSubmit() {
         let start_row = $("#start_row").val();
-        let row_count = $("#row_count").val();
+        let end_row = $("#end_row").val();
 
         if ($("#environment input[type=radio]:checked").size() > 0
           && start_row.length && !isNaN(start_row)
-          && row_count.length && !isNaN(row_count)) {
+          && end_row.length && !isNaN(end_row)) {
           $("#create_parts").removeAttr("disabled");
           var i = 1/0;
         }
@@ -104,14 +104,14 @@
         $("#create_parts").attr("disabled", "disabled");
         let environment = $("#environment input[type=radio]:checked").val();
         let start_row = $("#start_row").val();
-        let row_count = $("#row_count").val();
+        let end_row = $("#end_row").val();
         let orders = google.script.run
           .withSuccessHandler(onSuccess)
           .withFailureHandler(onFailure)
           .loadAndProcessRecords({
             'environment': environment,
             'start_row': start_row,
-            'row_count': row_count
+            'end_row': end_row
           });
       }
 

@@ -44,7 +44,7 @@ function testLoadAndProcessRecords() {
     loadAndProcessRecords({
       'environment': 'test',
       'start_row': 2,
-      'row_count': 2
+      'end_row': 6
     });
 }
   
@@ -54,7 +54,7 @@ function loadAndProcessRecords(config) {
   
     let spreadsheet = SpreadsheetApp.getActiveSheet();
     let startRow = parseInt(config.start_row);
-    let rowCount = parseInt(config.row_count);
+    let endRow = parseInt(config.end_row);
   
     // Ensure the first row has a barcode.
     if (getBarcode(spreadsheet, startRow) == null) {
@@ -64,7 +64,7 @@ function loadAndProcessRecords(config) {
   
     let currentItem = null;
     let primaryHoldingRecord = null;
-    for (let row = startRow; row < startRow + rowCount; row++) {
+    for (let row = startRow; row <= endRow; row++) {
         console.log("Starting on row #" + row);
         let rowBarcode = getBarcode(spreadsheet, row);
         let currentHoldingRecord = null;
