@@ -59,7 +59,7 @@ function loadAndProcessRecords(config) {
         else {
             // Create a new holding record linked to the new row's instance
             let instanceUuid = getInstanceUuid(spreadsheet, row);
-            currentHoldingRecord = cloneHoldingForNewInstance(primaryHoldingRecord, instanceUuid);
+            currentHoldingRecord = cloneHoldingForNewInstance(primaryHoldingRecord, instanceUuid, currentItem);
             if (currentHoldingRecord == null) {
                 console.error("Failed to clone holding record for instanceId " + instanceUuid +  ": " + primaryHoldingRecord)
                 updateSheet(spreadsheet, row, false);
@@ -121,7 +121,7 @@ function getHoldingRecord(id) {
     return holdingRecord;
 }
 
-function cloneHoldingForNewInstance(primaryHoldingRecord, instanceUuid) {
+function cloneHoldingForNewInstance(primaryHoldingRecord, instanceUuid, itemRecord) {
     let holdingRecord = Object.assign({}, primaryHoldingRecord);
 
     // Set the new instanceId
@@ -137,8 +137,20 @@ function cloneHoldingForNewInstance(primaryHoldingRecord, instanceUuid) {
     // Set the source type to explicitly be FOLIO
     holdingRecord.sourceId = SOURCE_ID_FOLIO;
 
-    // Execute post 
+    // Add holding note referencing the item barcode
     let config = JSON.parse(PropertiesService.getScriptProperties().getProperty("config"));
+    let noteType = (config.environment == "prod") 
+        ? "479353a3-15df-4deb-b03e-a45289196d01" 
+        : "28694388-1395-4373-b620-d3269dfcfc70";
+    let noteText = itemRecord.barcode;
+    let note = {
+        holdingsNoteTypeId: noteType,
+        note: noteText,
+        staffOnly: true
+    };
+    holdingRecord.notes.push(note);
+
+    // Execute post 
     let url = FOLIOAUTHLIBRARY.getBaseOkapi(config.environment) + "/holdings-storage/holdings";
     let headers = JSON.parse(PropertiesService.getScriptProperties().getProperty("headers"));
     let options = {
