@@ -148,6 +148,7 @@ function cloneHoldingForNewInstance(primaryHoldingRecord, instanceUuid, itemReco
         note: noteText,
         staffOnly: true
     };
+    holdingRecord.notes = [...holdingRecord.notes];
     holdingRecord.notes.push(note);
 
     // Execute post 
