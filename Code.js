@@ -132,6 +132,7 @@ function cloneHoldingForNewInstance(primaryHoldingRecord, instanceUuid, itemReco
     holdingRecord.hrid = null;
     holdingRecord.formerIds = null;
     holdingRecord.metadata = null;
+    holdingRecord.retentionPolicy = null;
     clearRetentionAgreements(holdingRecord);
 
     // Set the source type to explicitly be FOLIO
