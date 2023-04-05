@@ -1,3 +1,11 @@
+/*
+  Required FOLIO permissions:
+  - inventory.items.collection.get
+  - inventory-storage.holdings.item.get
+  - inventory-storage.holdings.item.post
+  - inventory-storage.bound-with-parts.item.post
+*/
+
 const ITEM_BARCODE_COLUMN = 'D';
 const INSTANCE_UUID_COLUMN = 'K';
 const LAST_COLUMN = 'L';
@@ -29,6 +37,10 @@ function testLoadAndProcessRecords() {
   
 function loadAndProcessRecords(config) {
     PropertiesService.getScriptProperties().setProperty("config", JSON.stringify(config));
+    config.username = PropertiesService.getScriptProperties().getProperty("username");
+    config.password = Utilities.newBlob(Utilities.base64Decode(
+        PropertiesService.getScriptProperties().getProperty("password")))
+        .getDataAsString();
     FOLIOAUTHLIBRARY.authenticateAndSetHeaders(config);
   
     let spreadsheet = SpreadsheetApp.getActiveSheet();
@@ -88,9 +100,12 @@ function getItemRecord(barcode) {
     let itemQuery = FOLIOAUTHLIBRARY.getBaseOkapi(config.environment) + 
         "/inventory/items?query=(barcode==" + barcode + ")";
     console.log("Loading item with query: ", itemQuery);
-    let getOptions = JSON.parse(PropertiesService.getScriptProperties().getProperty("getOptions"));
+    let getOptions = FOLIOAUTHLIBRARY.getHttpGetOptions();
     let response = UrlFetchApp.fetch(itemQuery, getOptions);
-    
+    if (response.getResponseCode() != 200) {
+        throw new Error("Cannot get item records, response: " + response);
+    }
+
     // parse response
     let responseText = response.getContentText();
     let responseObject = JSON.parse(responseText);
@@ -111,8 +126,11 @@ function getHoldingRecord(id) {
     let holdingRecordQuery = FOLIOAUTHLIBRARY.getBaseOkapi(config.environment) + 
         "/holdings-storage/holdings/" + id;
     console.log("Loading holding record with query: ", holdingRecordQuery);
-    let getOptions = JSON.parse(PropertiesService.getScriptProperties().getProperty("getOptions"));
+    let getOptions = FOLIOAUTHLIBRARY.getHttpGetOptions();
     let response = UrlFetchApp.fetch(holdingRecordQuery, getOptions);
+    if (response.getResponseCode() != 200) {
+        throw new Error("Cannot get holding record, response: " + response);
+    }
     
     // parse response
     let responseText = response.getContentText();
@@ -154,7 +172,7 @@ function cloneHoldingForNewInstance(primaryHoldingRecord, instanceUuid, itemReco
 
     // Execute post 
     let url = FOLIOAUTHLIBRARY.getBaseOkapi(config.environment) + "/holdings-storage/holdings";
-    let headers = JSON.parse(PropertiesService.getScriptProperties().getProperty("headers"));
+    let headers = FOLIOAUTHLIBRARY.getHttpGetHeaders();
     let options = {
       'method': 'POST',
       'contentType': 'application/json',
@@ -169,9 +187,8 @@ function cloneHoldingForNewInstance(primaryHoldingRecord, instanceUuid, itemReco
     let responseContent = response.getContentText()
     let statusCode = response.getResponseCode();
     console.log("Got response with code " + statusCode + ": " + JSON.stringify(response.getContentText()));
-    if (statusCode != 201) {
-        console.error("Unexpected status code.")
-        return null;
+    if (response.getResponseCode() != 201) {
+        throw new Error("Cannot create holding record, response: " + response);
     }
 
     let createdHoldingRecord = JSON.parse(responseContent);
@@ -193,7 +210,7 @@ function createBoundWithPart(item, holdingRecord) {
 
     // execute query 
     let url = FOLIOAUTHLIBRARY.getBaseOkapi(config.environment) + "/inventory-storage/bound-with-parts";
-    let headers = JSON.parse(PropertiesService.getScriptProperties().getProperty("headers"));
+    let headers = FOLIOAUTHLIBRARY.getHttpGetHeaders();
     let boundWithPart = {
         "holdingsRecordId": holdingRecord.id,
         "itemId": item.id
@@ -213,9 +230,8 @@ function createBoundWithPart(item, holdingRecord) {
     let statusCode = response.getResponseCode();
     console.log("Got response with code " + statusCode + ": " + JSON.stringify(response.getContentText()));
 
-    if (statusCode != 201) {
-        console.error("Unexpected status code.")
-        return false;
+    if (response.getResponseCode() != 201) {
+        throw new Error("Cannot create bound-with part, response: " + response);
     }
     return true;
 }
